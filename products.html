@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — Pocket Toon</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="logo.jpg" type="image/jpeg">
+  <style>
+    .cat-hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1e1b4b 35%, #312e81 65%, #4c1d95 100%);
+      color: white; padding: 5rem 0 3.5rem; position: relative; overflow: hidden; text-align: center;
+    }
+    .cat-hero::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 80% at 50% 110%, rgba(124,58,237,0.25) 0%, transparent 65%);
+    }
+    .cat-hero__breadcrumb {
+      font-size: 1.25rem; color: rgba(255,255,255,0.45); margin-bottom: 1.2rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem; position: relative; z-index: 1;
+    }
+    .cat-hero__breadcrumb a { color: rgba(255,255,255,0.55); transition: color .2s; text-decoration: none; }
+    .cat-hero__breadcrumb a:hover { color: var(--yellow); }
+    .cat-hero__title {
+      font-family: var(--font-heading); font-size: clamp(2.8rem, 5vw, 5rem);
+      font-weight: 700; margin-bottom: 0.8rem; position: relative; z-index: 1;
+    }
+    .cat-hero__title .accent { color: var(--yellow); text-shadow: 0 0 28px rgba(251,191,36,0.5); }
+    .cat-hero__count { font-size: 1.35rem; color: rgba(255,255,255,0.55); position: relative; z-index: 1; }
+
+    /* Filter chips */
+    .cat-filter-bar {
+      background: white; border-bottom: 1px solid rgba(124,58,237,0.1);
+      padding: 1.4rem 0; position: sticky; top: 70px; z-index: 50;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+    .cat-filter-bar__inner {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .cat-chips { display: flex; gap: 0.8rem; flex-wrap: wrap; flex: 1; }
+    .cat-chip {
+      padding: 0.7rem 1.6rem; border-radius: 999px; font-size: 1.3rem; font-weight: 600;
+      border: 1.5px solid rgba(124,58,237,0.2); background: var(--off-white);
+      color: var(--text-mid); cursor: pointer; transition: all .22s; white-space: nowrap;
+      font-family: var(--font-heading);
+    }
+    .cat-chip:hover { border-color: var(--purple); color: var(--purple); background: rgba(124,58,237,0.06); }
+    .cat-chip.active { background: var(--purple); color: white; border-color: var(--purple); box-shadow: 0 4px 16px rgba(124,58,237,0.3); }
+    .cat-search {
+      border: 1.5px solid rgba(124,58,237,0.2); border-radius: var(--radius-md);
+      padding: 0.8rem 1.2rem 0.8rem 3.4rem; font-size: 1.35rem; font-family: var(--font-body);
+      outline: none; background: var(--off-white); width: 22rem; max-width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 18 19'%3E%3Cpath fill='%237c3aed' fill-rule='evenodd' d='M11.03 11.68A5.784 5.784 0 1 1 2.85 3.5a5.784 5.784 0 0 1 8.18 8.18m.26 1.12a6.78 6.78 0 1 1 .72-.7l5.4 5.4a.5.5 0 1 1-.71.7z' clip-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: 1rem center; background-size: 1.4rem;
+    }
+    .cat-search:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+    .cat-sort {
+      border: 1.5px solid rgba(124,58,237,0.2); border-radius: var(--radius-md);
+      padding: 0.8rem 1.2rem; font-size: 1.35rem; font-family: var(--font-body);
+      outline: none; background: var(--off-white); cursor: pointer; color: var(--text-mid);
+    }
+    .cat-sort:focus { border-color: var(--purple); }
+
+    /* Products section */
+    .cat-section { padding: 4rem 0 6rem; background: var(--white); min-height: 50vh; }
+    .cat-grid { display: grid; gap: 2rem; grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 600px)  { .cat-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 990px)  { .cat-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1200px) { .cat-grid { grid-template-columns: repeat(5, 1fr); } }
+
+    .cat-empty {
+      grid-column: 1/-1; text-align: center; padding: 6rem 0; color: var(--text-light);
+    }
+    .cat-empty svg { width: 6rem; height: 6rem; margin: 0 auto 1.6rem; display: block; opacity: .35; }
+    .cat-empty p { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .cat-empty small { font-size: 1.35rem; }
+
+    .cat-results-label {
+      font-size: 1.35rem; color: var(--text-light); margin-bottom: 2rem;
+    }
+    .cat-results-label strong { color: var(--text-dark); }
+
+    .cat-loading {
+      grid-column: 1/-1; text-align: center; padding: 6rem 0;
+      color: var(--text-light); font-size: 1.6rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar">
+  <div class="announcement-bar__inner">
+    <span class="announcement-bar__item">Free Shipping on All Orders</span>
+    <span class="announcement-bar__item">100% Authentic Imported Products</span>
+    <span class="announcement-bar__item">Official Licensed Merchandise</span>
+    <span class="announcement-bar__item">Dispatched within 24–48 Hours</span>
+    <span class="announcement-bar__item">Secure Checkout</span>
+    <span class="announcement-bar__item">Free Shipping on All Orders</span>
+    <span class="announcement-bar__item">100% Authentic Imported Products</span>
+    <span class="announcement-bar__item">Official Licensed Merchandise</span>
+    <span class="announcement-bar__item">Dispatched within 24–48 Hours</span>
+    <span class="announcement-bar__item">Secure Checkout</span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="section-header">
+  <div class="header-wrapper">
+    <div class="header page-width">
+      <div class="header__left">
+        <button class="header__icon header__icon--hamburger" aria-label="Menu">
+          <svg fill="none" viewBox="0 0 18 16"><path fill="currentColor" d="M1 .5a.5.5 0 1 0 0 1h15.71a.5.5 0 0 0 0-1zM.5 8a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1A.5.5 0 0 1 .5 8m0 7a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5"/></svg>
+        </button>
+        <nav class="header__inline-menu">
+          <ul class="list-menu list-menu--inline">
+            <li><a href="index.html" class="header__menu-item"><span>Home</span></a></li>
+            <li>
+              <details class="mega-menu">
+                <summary class="header__menu-item">
+                  <span>Beyblades</span>
+                  <svg class="icon-caret" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg>
+                </summary>
+                <div class="mega-menu__content">
+                  <ul class="mega-menu__list">
+                    <li><a href="products.html?cat=Plastic+Gen" class="mega-menu__link mega-menu__link--level-2">Plastic Gen</a></li>
+                    <li><a href="products.html?cat=Metal+Gen" class="mega-menu__link mega-menu__link--level-2">Metal Gen</a></li>
+                    <li><a href="products.html?cat=Burst+Gen" class="mega-menu__link mega-menu__link--level-2">Burst Gen</a></li>
+                    <li><a href="products.html?cat=Beyblade+X" class="mega-menu__link mega-menu__link--level-2">Beyblade X</a></li>
+                  </ul>
+                </div>
+              </details>
+            </li>
+            <li>
+              <details class="mega-menu">
+                <summary class="header__menu-item">
+                  <span>Anime Figures</span>
+                  <svg class="icon-caret" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg>
+                </summary>
+                <div class="mega-menu__content">
+                  <ul class="mega-menu__list mega-menu__list--condensed">
+                    <li><a href="products.html?cat=One+Piece" class="mega-menu__link mega-menu__link--level-2">One Piece</a></li>
+                    <li><a href="products.html?cat=Demon+Slayer" class="mega-menu__link mega-menu__link--level-2">Demon Slayer</a></li>
+                    <li><a href="products.html?cat=Spy+x+Family" class="mega-menu__link mega-menu__link--level-2">Spy x Family</a></li>
+                    <li><a href="products.html?cat=My+Hero+Academia" class="mega-menu__link mega-menu__link--level-2">My Hero Academia</a></li>
+                    <li><a href="products.html?cat=Tokyo+Revengers" class="mega-menu__link mega-menu__link--level-2">Tokyo Revengers</a></li>
+                    <li><a href="products.html?cat=Waifu+Figures" class="mega-menu__link mega-menu__link--level-2">Waifu Figures</a></li>
+                    <li><a href="products.html?cat=TenSura" class="mega-menu__link mega-menu__link--level-2">TenSura</a></li>
+                  </ul>
+                </div>
+              </details>
+            </li>
+            <li><a href="index.html#contact" class="header__menu-item"><span>Contact</span></a></li>
+          </ul>
+        </nav>
+      </div>
+      <h1 class="header__heading">
+        <a href="index.html" class="header__heading-link">
+          <img src="logo.jpg" alt="Pocket Toon" class="header__heading-logo">
+        </a>
+      </h1>
+      <div class="header__right">
+        <button class="header__icon header__icon--search" aria-label="Search">
+          <svg fill="none" viewBox="0 0 18 19"><path fill="currentColor" fill-rule="evenodd" d="M11.03 11.68A5.784 5.784 0 1 1 2.85 3.5a5.784 5.784 0 0 1 8.18 8.18m.26 1.12a6.78 6.78 0 1 1 .72-.7l5.4 5.4a.5.5 0 1 1-.71.7z" clip-rule="evenodd"/></svg>
+        </button>
+        <button class="header__icon header__icon--cart" aria-label="Cart">
+          <svg fill="none" viewBox="0 0 40 40"><path fill="currentColor" fill-rule="evenodd" d="M11.756 6h16.732l3.516 8H8.24zM8.24 16h23.52l1.494 13.5a2 2 0 0 1-1.99 2.247H8.736a2 2 0 0 1-1.99-2.247zm9.26 6a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0zm3.5-.5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5zm4 .5a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0z" clip-rule="evenodd"/></svg>
+          <span class="cart-count-bubble cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE MENU DRAWER -->
+<div class="menu-drawer-overlay" id="menuOverlay"></div>
+<div class="menu-drawer" id="menuDrawer">
+  <div class="menu-drawer__header">
+    <img src="logo.jpg" alt="Pocket Toon" class="menu-drawer__logo">
+    <button class="menu-drawer__close" id="menuClose">
+      <svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+    </button>
+  </div>
+  <nav class="menu-drawer__nav">
+    <a href="index.html" class="menu-drawer__item">Home</a>
+    <button class="menu-drawer__submenu-btn" data-target="drawerBeyblades">Beyblades <svg class="caret" width="10" height="6" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg></button>
+    <div class="menu-drawer__sub" id="drawerBeyblades">
+      <a href="products.html?cat=Plastic+Gen">Plastic Gen</a>
+      <a href="products.html?cat=Metal+Gen">Metal Gen</a>
+      <a href="products.html?cat=Burst+Gen">Burst Gen</a>
+      <a href="products.html?cat=Beyblade+X">Beyblade X</a>
+    </div>
+    <button class="menu-drawer__submenu-btn" data-target="drawerAnime">Anime Figures <svg class="caret" width="10" height="6" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg></button>
+    <div class="menu-drawer__sub" id="drawerAnime">
+      <a href="products.html?cat=One+Piece">One Piece</a>
+      <a href="products.html?cat=Demon+Slayer">Demon Slayer</a>
+      <a href="products.html?cat=Spy+x+Family">Spy x Family</a>
+      <a href="products.html?cat=My+Hero+Academia">My Hero Academia</a>
+      <a href="products.html?cat=Waifu+Figures">Waifu Figures</a>
+      <a href="products.html?cat=TenSura">TenSura</a>
+    </div>
+    <a href="index.html#contact" class="menu-drawer__item">Contact</a>
+  </nav>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-overlay__inner page-width">
+    <input type="search" class="search-overlay__input" placeholder="Search products…" autocomplete="off">
+    <button class="search-overlay__close" id="searchClose">
+      <svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer__header">
+    <div class="cart-drawer__title">🛒 Your Cart</div>
+    <button class="cart-drawer__close" id="cartClose">
+      <svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+    </button>
+  </div>
+  <div class="cart-drawer__body" id="cartBody">
+    <div class="cart-drawer__empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <p>Your cart is empty</p>
+    </div>
+  </div>
+  <div class="cart-drawer__footer" id="cartFooter" style="display:none">
+    <div class="cart-drawer__subtotal">
+      <span class="cart-drawer__subtotal-label">Subtotal</span>
+      <span class="cart-drawer__subtotal-amount" id="cartSubtotal">Rs. 0.00</span>
+    </div>
+    <button class="btn-checkout" id="checkoutBtn">Checkout →</button>
+  </div>
+</div>
+
+<!-- HERO BANNER -->
+<div class="cat-hero">
+  <div class="page-width">
+    <div class="cat-hero__breadcrumb">
+      <a href="index.html">Home</a>
+      <span>›</span>
+      <span id="heroCrumb">All Products</span>
+    </div>
+    <h2 class="cat-hero__title" id="heroTitle">All <span class="accent">Products</span></h2>
+    <p class="cat-hero__count" id="heroCount">Loading…</p>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="cat-filter-bar">
+  <div class="page-width">
+    <div class="cat-filter-bar__inner">
+      <div class="cat-chips" id="catChips"></div>
+      <div style="display:flex;gap:1rem;flex-shrink:0;flex-wrap:wrap;">
+        <input type="search" class="cat-search" id="catSearch" placeholder="Search products…">
+        <select class="cat-sort" id="catSort">
+          <option value="default">Sort: Default</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="name-asc">Name: A → Z</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS GRID -->
+<section class="cat-section">
+  <div class="page-width">
+    <p class="cat-results-label" id="resultsLabel"></p>
+    <div class="cat-grid" id="catGrid">
+      <div class="cat-loading">Loading products…</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT MODAL -->
+<div class="product-modal-overlay" id="productModalOverlay">
+  <div class="product-modal">
+    <div class="product-modal__close"><button id="pmClose"><svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg></button></div>
+    <div class="product-modal__body">
+      <div class="product-modal__images">
+        <div class="product-modal__main-img"><img id="pmMainImg" src="" alt=""></div>
+        <div class="product-modal__thumbs" id="pmThumbs"></div>
+      </div>
+      <div class="product-modal__details">
+        <div class="product-modal__vendor" id="pmVendor"></div>
+        <h3 class="product-modal__title" id="pmTitle"></h3>
+        <div class="product-modal__price" id="pmPrice"></div>
+        <hr class="product-modal__divider">
+        <p class="product-modal__desc" id="pmDesc"></p>
+        <div class="product-modal__qty-label">Quantity</div>
+        <div class="qty-control" style="margin-bottom:1.6rem">
+          <button class="qty-control__btn" id="pmQtyMinus">−</button>
+          <input class="qty-control__input" type="number" id="pmQtyInput" value="1" min="1">
+          <button class="qty-control__btn" id="pmQtyPlus">+</button>
+        </div>
+        <button class="btn-add-cart" id="pmAddCart" style="font-size:1.5rem;padding:1.3rem">Add to Cart</button>
+        <button class="btn-view-all dark" id="pmCloseBtn" style="width:100%;margin-top:1rem;text-align:center;display:block">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="checkout-modal-overlay" id="checkoutModalOverlay">
+  <div class="checkout-modal">
+    <div class="checkout-modal__header">
+      <div class="checkout-modal__header-left">
+        <div class="checkout-modal__icon">🛒</div>
+        <div>
+          <div class="checkout-modal__title">Checkout</div>
+          <div class="checkout-modal__subtitle">Login or create an account to place your order</div>
+        </div>
+      </div>
+      <button class="checkout-modal__close" id="checkoutModalClose">
+        <svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+      </button>
+    </div>
+    <div class="checkout-modal__body">
+      <div class="checkout-tabs">
+        <button class="checkout-tab active" id="tabLogin" onclick="switchCheckoutTab('login')">🔑 Login</button>
+        <button class="checkout-tab" id="tabRegister" onclick="switchCheckoutTab('register')">✨ New Account</button>
+      </div>
+      <div id="checkoutLoginForm">
+        <div class="checkout-form-group">
+          <label class="checkout-label">Gmail / Email</label>
+          <input class="checkout-input" type="email" id="loginEmail" placeholder="you@gmail.com">
+        </div>
+        <div class="checkout-form-group">
+          <label class="checkout-label">Password</label>
+          <input class="checkout-input" type="password" id="loginPassword" placeholder="••••••••">
+        </div>
+        <p class="checkout-switch-text">Don't have an account? <a href="#" onclick="switchCheckoutTab('register');return false">Create one →</a></p>
+        <button class="checkout-submit-btn" id="loginSubmitBtn">Login &amp; Continue →</button>
+      </div>
+      <div id="checkoutRegisterForm" style="display:none">
+        <div class="checkout-form-row">
+          <div class="checkout-form-group">
+            <label class="checkout-label">Full Name <span>*</span></label>
+            <input class="checkout-input" type="text" id="regName" placeholder="e.g. Rahul Sharma">
+          </div>
+          <div class="checkout-form-group">
+            <label class="checkout-label">Mobile Number <span>*</span></label>
+            <input class="checkout-input" type="tel" id="regPhone" placeholder="+91 98765 43210">
+          </div>
+        </div>
+        <div class="checkout-form-group">
+          <label class="checkout-label">Gmail / Email <span>*</span></label>
+          <input class="checkout-input" type="email" id="regEmail" placeholder="you@gmail.com">
+        </div>
+        <div class="checkout-form-group">
+          <label class="checkout-label">Delivery Address <span>*</span></label>
+          <textarea class="checkout-input checkout-textarea" id="regAddress" placeholder="Flat No., Street, City, State, PIN Code"></textarea>
+        </div>
+        <div class="checkout-form-group">
+          <label class="checkout-label">Password</label>
+          <input class="checkout-input" type="password" id="regPassword" placeholder="Create a password (optional, min 6 chars)">
+        </div>
+        <p class="checkout-switch-text">Already have an account? <a href="#" onclick="switchCheckoutTab('login');return false">← Login</a></p>
+        <button class="checkout-submit-btn" id="registerSubmitBtn">🎉 Place Order</button>
+      </div>
+      <div class="checkout-order-summary" id="checkoutOrderSummary"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast__icon">🛒</span>
+  <span class="toast__msg"></span>
+</div>
+
+<!-- Supabase CDN — must load before script.js -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase-config.js"></script>
+<script src="script.js"></script>
+<script>
+// ── Products Page Logic (async — uses getProducts() from script.js) ──
+(async function() {
+  // All products loaded from Supabase (via script.js getProducts())
+  let allProducts = [];
+  let activeCategory = 'All';
+  let allCategories  = ['All'];
+  let searchQuery    = '';
+  let sortMode       = 'default';
+
+  // Read ?cat= from URL on load
+  function getCatFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('cat') || 'All';
+  }
+
+  function setURL(cat) {
+    const url = cat === 'All'
+      ? window.location.pathname
+      : window.location.pathname + '?cat=' + encodeURIComponent(cat);
+    window.history.replaceState({}, '', url);
+  }
+
+  function buildChips() {
+    const container = document.getElementById('catChips');
+    if (!container) return;
+    container.innerHTML = allCategories.map(cat =>
+      '<button class="cat-chip' + (cat === activeCategory ? ' active' : '') + '" data-cat="' + cat + '">' + (cat === 'All' ? '🌐 All' : cat) + '</button>'
+    ).join('');
+    container.querySelectorAll('.cat-chip').forEach(btn => {
+      btn.addEventListener('click', function() {
+        activeCategory = this.dataset.cat;
+        setURL(activeCategory);
+        buildChips();
+        updateHero();
+        renderGrid();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  }
+
+  function getFilteredProducts() {
+    let products = [...allProducts];
+    if (activeCategory !== 'All') {
+      products = products.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase());
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      products = products.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        (p.vendor || '').toLowerCase().includes(q)
+      );
+    }
+    if (sortMode === 'price-asc')  products = products.slice().sort((a,b) => a.price - b.price);
+    if (sortMode === 'price-desc') products = products.slice().sort((a,b) => b.price - a.price);
+    if (sortMode === 'name-asc')   products = products.slice().sort((a,b) => a.name.localeCompare(b.name));
+    return products;
+  }
+
+  function renderGrid() {
+    const filtered   = getFilteredProducts();
+    const grid       = document.getElementById('catGrid');
+    const label      = document.getElementById('resultsLabel');
+    const heroCount  = document.getElementById('heroCount');
+    if (!grid) return;
+
+    if (label) {
+      label.innerHTML = 'Showing <strong>' + filtered.length + '</strong> product' + (filtered.length !== 1 ? 's' : '') +
+        (activeCategory !== 'All' ? ' in <strong>' + activeCategory + '</strong>' : '');
+    }
+    if (heroCount) heroCount.textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
+
+    if (filtered.length === 0) {
+      grid.innerHTML =
+        '<div class="cat-empty">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">' +
+            '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>' +
+            '<line x1="3" y1="6" x2="21" y2="6"/>' +
+            '<path d="M16 10a4 4 0 0 1-8 0"/>' +
+          '</svg>' +
+          '<p>No products found</p>' +
+          '<small>Try a different category or search term</small>' +
+        '</div>';
+      return;
+    }
+
+    // BUG FIX: use DOM elements + event delegation — no JSON inside onclick attributes
+    grid.innerHTML = '';
+    filtered.forEach(function(p) {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML =
+        '<div class="product-card__media">' +
+          '<img src="' + escHtml(p.img) + '" alt="' + escHtml(p.name) + '" loading="lazy" onerror="this.src=\'https://placehold.co/400x400/eee/aaa?text=?\'">' +
+          (!p.inStock ? '<span class="product-card__badge sold-out">Sold Out</span>' : '') +
+        '</div>' +
+        '<div class="product-card__info">' +
+          '<div class="product-card__vendor">' + escHtml(p.vendor || '') + '</div>' +
+          '<div class="product-card__title">' + escHtml(p.name) + '</div>' +
+          '<div class="product-card__price">' + formatPrice(p.price) + '</div>' +
+          '<div class="qty-control">' +
+            '<button class="qty-control__btn qty-minus">−</button>' +
+            '<input class="qty-control__input" type="number" value="1" min="1">' +
+            '<button class="qty-control__btn qty-plus">+</button>' +
+          '</div>' +
+          '<button class="btn-add-cart"' + (!p.inStock ? ' disabled' : '') + '>' + (p.inStock ? 'Add to Cart' : 'Sold Out') + '</button>' +
+        '</div>';
+      const qtyInput = card.querySelector('.qty-control__input');
+      card.querySelector('.qty-minus').addEventListener('click', function(e) { e.stopPropagation(); qtyInput.value = Math.max(1, parseInt(qtyInput.value) - 1); });
+      card.querySelector('.qty-plus').addEventListener('click', function(e) { e.stopPropagation(); qtyInput.value = parseInt(qtyInput.value) + 1; });
+      card.querySelector('.btn-add-cart').addEventListener('click', function(e) {
+        e.stopPropagation();
+        addToCart(Object.assign({}, p, { qty: parseInt(qtyInput.value) || 1 }));
+      });
+      card.addEventListener('click', function() { openProductModal(p); });
+      grid.appendChild(card);
+    });
+  }
+
+  function updateHero() {
+    const title = document.getElementById('heroTitle');
+    const crumb = document.getElementById('heroCrumb');
+    if (activeCategory === 'All') {
+      if (title) title.innerHTML = 'All <span class="accent">Products</span>';
+      if (crumb) crumb.textContent = 'All Products';
+    } else {
+      if (title) title.innerHTML = '<span class="accent">' + activeCategory + '</span>';
+      if (crumb) crumb.textContent = activeCategory;
+    }
+  }
+
+  // ── Bootstrap ──────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async function() {
+    activeCategory = getCatFromURL();
+
+    // Load products async from Supabase
+    allProducts = await getProducts();
+
+    // Build category list dynamically from actual product data + Supabase categories
+    try {
+      const cats = await getStorefrontCategories();
+      const catNames = cats.map(function(c) { return c.name; });
+      const fromProducts = allProducts.map(function(p) { return p.category; });
+      const combined = ['All', ...new Set([...catNames, ...fromProducts].filter(Boolean))];
+      allCategories = combined;
+    } catch(e) {
+      allCategories = ['All', ...new Set(allProducts.map(function(p) { return p.category; }).filter(Boolean))];
+    }
+
+    buildChips();
+    updateHero();
+    renderGrid();
+
+    document.getElementById('catSearch')?.addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      renderGrid();
+    });
+    document.getElementById('catSort')?.addEventListener('change', function() {
+      sortMode = this.value;
+      renderGrid();
+    });
+    document.getElementById('checkoutBtn')?.addEventListener('click', openCheckoutModal);
+  });
+})();
+</script>
+</body>
+</html>
