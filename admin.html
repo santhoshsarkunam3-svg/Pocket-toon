@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Pocket Toon</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="icon" href="logo.jpg" type="image/jpeg">
+  <script>
+    // Admin page protection: only accessible via /admin path
+    (function() {
+      var path = window.location.pathname;
+      // Allow: /admin, /admin/, /admin.html (dev), or localhost
+      var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      var isAdminPath = /\/(admin)(\/|\.html)?$/i.test(path) || path === '/admin';
+      if (!isLocal && !isAdminPath) {
+        // Store intended destination and redirect to home
+        window.location.replace('/');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="admin-sidebar" id="adminSidebar">
+  <div class="sidebar-logo">
+    <img src="logo.jpg" alt="Pocket Toon">
+    <div class="sidebar-logo-text">Pocket Toon<span>Admin Panel</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-label">Main</div>
+    <button class="sidebar-link" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+    </button>
+    <button class="sidebar-link" data-view="products">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Products
+    </button>
+    <button class="sidebar-link" data-view="add-product">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Add Product
+    </button>
+    <button class="sidebar-link" data-view="categories">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Categories
+    </button>
+    <button class="sidebar-link" data-view="users">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users
+    </button>
+    <div class="sidebar-section-label" style="margin-top:1.5rem">Quick Links</div>
+    <a href="index.html" class="sidebar-link" target="_blank" style="text-decoration:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>View Storefront
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user__avatar">A</div>
+      <div class="sidebar-user__info">
+        <div class="sidebar-user__name">Admin</div>
+        <div class="sidebar-user__role">Store Manager</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="admin-main">
+
+  <!-- Topbar -->
+  <div class="admin-topbar">
+    <div style="display:flex;align-items:center;gap:1.2rem">
+      <button class="btn btn-outline sidebar-toggle" id="mobileMenuToggle" style="padding:0.7rem 1rem">
+        <svg viewBox="0 0 18 16" width="18" fill="currentColor"><path d="M1 .5a.5.5 0 1 0 0 1h15.71a.5.5 0 0 0 0-1zM.5 8a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1A.5.5 0 0 1 .5 8m0 7a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5"/></svg>
+      </button>
+      <div class="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary" id="topbarAddProduct">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product
+      </button>
+      <a href="index.html" class="btn btn-outline" target="_blank" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Store
+      </a>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="admin-content">
+
+    <!-- DASHBOARD VIEW -->
+    <div class="admin-view" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-card__icon blue">📦</div><div><div class="stat-card__value" id="stat-products">0</div><div class="stat-card__label">Total Products</div></div></div>
+        <div class="stat-card"><div class="stat-card__icon green">✅</div><div><div class="stat-card__value" id="stat-in-stock">0</div><div class="stat-card__label">In Stock</div></div></div>
+        <div class="stat-card"><div class="stat-card__icon yellow">⚠️</div><div><div class="stat-card__value" id="stat-out-stock">0</div><div class="stat-card__label">Out of Stock</div></div></div>
+        <div class="stat-card"><div class="stat-card__icon navy">🏷️</div><div><div class="stat-card__value" id="stat-categories">0</div><div class="stat-card__label">Categories</div></div></div>
+        <div class="stat-card"><div class="stat-card__icon purple">👥</div><div><div class="stat-card__value" id="stat-users">0</div><div class="stat-card__label">Registered Users</div></div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-card__header">
+          <div class="section-card__title">Recent Products</div>
+          <button class="btn btn-outline" onclick="showView('products')" style="font-size:1.3rem;padding:0.6rem 1.4rem">View All</button>
+        </div>
+        <div>
+          <div class="table-header"><span></span><span>Image</span><span>Product</span><span>Price</span><span>Category</span><span>Status</span><span></span><span>Actions</span></div>
+          <div class="products-list" id="recentProductsList"></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-card__header"><div class="section-card__title">Quick Actions</div></div>
+        <div class="section-card__body" style="display:flex;gap:1.5rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="showView('add-product')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:1.6rem;height:1.6rem"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add New Product</button>
+          <button class="btn btn-outline" onclick="showView('categories')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.6rem;height:1.6rem"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Manage Categories</button>
+          <button class="btn btn-outline" onclick="showView('users')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.6rem;height:1.6rem"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>View Users</button>
+          <a href="index.html" class="btn btn-outline" target="_blank" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.6rem;height:1.6rem"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Storefront</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS VIEW -->
+    <div class="admin-view" id="view-products">
+      <div class="section-card">
+        <div class="section-card__header">
+          <div class="section-card__title">All Products</div>
+          <button class="btn btn-primary" onclick="showView('add-product')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:1.6rem;height:1.6rem"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>
+        </div>
+        <div style="padding:1.5rem 2rem 0">
+          <div class="products-toolbar">
+            <div class="search-bar"><svg viewBox="0 0 18 19" fill="none"><path fill="currentColor" fill-rule="evenodd" d="M11.03 11.68A5.784 5.784 0 1 1 2.85 3.5a5.784 5.784 0 0 1 8.18 8.18m.26 1.12a6.78 6.78 0 1 1 .72-.7l5.4 5.4a.5.5 0 1 1-.71.7z" clip-rule="evenodd"/></svg><input type="search" id="productSearch" placeholder="Search products…" autocomplete="off"></div>
+            <select class="filter-select" id="categoryFilter"><option value="">All Categories</option></select>
+            <select class="filter-select" id="statusFilter"><option value="">All Status</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select>
+          </div>
+        </div>
+        <div>
+          <div class="table-header"><span title="Drag to reorder">⠿</span><span>Image</span><span>Product Name</span><span>Price</span><span>Category</span><span>Status</span><span>In Stock</span><span>Actions</span></div>
+          <div class="products-list" id="productsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD / EDIT PRODUCT VIEW -->
+    <div class="admin-view" id="view-add-product">
+      <div class="section-card">
+        <div class="section-card__header"><div class="section-card__title" id="formTitle">Add New Product</div></div>
+        <div class="section-card__body">
+          <form id="productForm" onsubmit="return false">
+            <div class="form-grid">
+              <div class="form-field form-field--full">
+                <label class="form-label" for="fieldName">Product Name <span>*</span></label>
+                <input class="form-input" type="text" id="fieldName" placeholder="e.g. Takaratomy Beyblade Burst B-193 Astral Spriggan" required>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="fieldVendor">Vendor / Brand</label>
+                <input class="form-input" type="text" id="fieldVendor" placeholder="e.g. TAKARA TOMY">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="fieldPrice">Price (₹) <span>*</span></label>
+                <input class="form-input" type="number" id="fieldPrice" placeholder="e.g. 1299" min="0" step="0.01" required>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="fieldCategory">Category <span>*</span></label>
+                <select class="form-select" id="fieldCategory" required><option value="">Select Category</option></select>
+              </div>
+              <div class="form-field" style="justify-content:flex-end">
+                <label class="form-label">Stock Status</label>
+                <label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-size:1.4rem;margin-top:0.4rem">
+                  <input type="checkbox" id="fieldInStock" checked style="accent-color:var(--success);width:1.8rem;height:1.8rem;cursor:pointer">
+                  <span>In Stock</span>
+                </label>
+              </div>
+              <div class="form-field form-field--full">
+                <label class="form-label" for="fieldDesc">Description</label>
+                <textarea class="form-textarea" id="fieldDesc" placeholder="Describe the product…"></textarea>
+              </div>
+              <div class="form-field form-field--full">
+                <label class="form-label">Product Images</label>
+                <div style="display:flex;gap:1rem;margin-bottom:1.2rem">
+                  <input class="form-input" type="url" id="fieldImgUrl" placeholder="Paste image URL (https://…)" style="flex:1">
+                  <button type="button" class="btn btn-outline" id="addImgUrlBtn">Add URL</button>
+                </div>
+                <div class="image-upload-area" id="imageUploadArea">
+                  <input type="file" accept="image/*" multiple>
+                  <div class="image-upload-area__icon">🖼️</div>
+                  <div class="image-upload-area__text"><strong><span>Click to upload</span></strong> or drag and drop images here</div>
+                  <div class="image-upload-area__hint">PNG, JPG, WEBP up to 10MB each</div>
+                </div>
+                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                <p style="font-size:1.25rem;color:var(--text-light);margin-top:0.8rem">First image = main product image. Click × to remove.</p>
+              </div>
+            </div>
+            <div style="display:flex;gap:1.2rem;margin-top:2.4rem;justify-content:flex-end;flex-wrap:wrap">
+              <button type="button" class="btn btn-outline" id="cancelProductBtn">Cancel</button>
+              <button type="button" class="btn btn-success" id="saveProductBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:1.6rem;height:1.6rem"><polyline points="20 6 9 17 4 12"/></svg>Save Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES VIEW -->
+    <div class="admin-view" id="view-categories">
+      <div class="section-card" style="margin-bottom:2rem">
+        <div class="section-card__header"><div class="section-card__title">Add New Category</div></div>
+        <div class="section-card__body">
+          <div style="display:flex;gap:1.2rem;flex-wrap:wrap;max-width:70rem">
+            <input class="form-input" type="text" id="newCategoryName" placeholder="Category name, e.g. One Piece" style="flex:1;min-width:20rem">
+            <select class="form-select" id="newCategoryType" style="min-width:16rem">
+              <option value="beyblade">Beyblade</option>
+              <option value="anime">Anime Figure</option>
+            </select>
+            <button class="btn btn-primary" id="addCategoryBtn">Add Category</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-card" style="margin-bottom:2rem">
+        <div class="section-card__header">
+          <div class="section-card__title">🪀 Beyblade Categories</div>
+          <span style="font-size:1.3rem;color:var(--text-light)">Hover a card to change its image</span>
+        </div>
+        <div class="section-card__body">
+          <div class="categories-grid" id="beybladeCategories"></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-card__header">
+          <div class="section-card__title">🎌 Anime Figure Categories</div>
+          <span style="font-size:1.3rem;color:var(--text-light)">Hover a card to change its image</span>
+        </div>
+        <div class="section-card__body">
+          <div class="categories-grid" id="animeCategories"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS VIEW -->
+    <div class="admin-view" id="view-users">
+      <div class="section-card">
+        <div class="section-card__header">
+          <div class="section-card__title">All Registered Users</div>
+          <div style="display:flex;gap:1rem;align-items:center">
+            <span id="usersCount" style="font-size:1.3rem;color:var(--text-light)">0 users</span>
+            <button class="btn btn-danger" id="clearAllUsersBtn" style="font-size:1.2rem;padding:0.6rem 1.2rem">Clear All</button>
+          </div>
+        </div>
+        <div style="padding:1.5rem 2rem 0">
+          <div class="products-toolbar">
+            <div class="search-bar"><svg viewBox="0 0 18 19" fill="none"><path fill="currentColor" fill-rule="evenodd" d="M11.03 11.68A5.784 5.784 0 1 1 2.85 3.5a5.784 5.784 0 0 1 8.18 8.18m.26 1.12a6.78 6.78 0 1 1 .72-.7l5.4 5.4a.5.5 0 1 1-.71.7z" clip-rule="evenodd"/></svg><input type="search" id="userSearch" placeholder="Search by name or email…" autocomplete="off"></div>
+          </div>
+        </div>
+        <div>
+          <div class="users-table-header"><span>#</span><span>Name</span><span>Email</span><span>Mobile</span><span>Registered</span><span>Orders</span><span>Actions</span></div>
+          <div id="usersList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+</div><!-- /admin-main -->
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-backdrop" id="confirmDeleteModal">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog__icon">🗑️</div>
+    <div class="confirm-dialog__title">Delete Product?</div>
+    <div class="confirm-dialog__desc">Are you sure you want to delete "<span id="deleteProductName"></span>"? This cannot be undone.</div>
+    <div class="confirm-dialog__actions">
+      <button class="btn btn-outline" id="cancelDeleteBtn">Cancel</button>
+      <button class="btn btn-danger"  id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal-backdrop" id="userDetailModal">
+  <div class="modal" style="max-width:55rem">
+    <div class="modal__header">
+      <div class="modal__title">User Details</div>
+      <button class="modal__close" id="closeUserDetailBtn"><svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg></button>
+    </div>
+    <div class="modal__body" id="userDetailBody"></div>
+    <div class="modal__footer">
+      <button class="btn btn-outline" id="closeUserDetailBtnFooter">Close</button>
+      <button class="btn btn-danger"  id="deleteUserFromModalBtn">Delete User</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY IMAGE MODAL -->
+<div class="modal-backdrop" id="catImgModal">
+  <div class="modal" style="max-width:52rem">
+    <div class="modal__header">
+      <div class="modal__title" id="catImgModalTitle">Change Category Image</div>
+      <button class="modal__close" id="cancelCatImgBtnHeader"><svg fill="none" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg></button>
+    </div>
+    <div class="modal__body">
+      <div class="cat-img-modal-body">
+
+        <!-- Preview -->
+        <img id="catImgPreview" src="" alt="Category image preview" style="display:none;width:100%;max-height:22rem;object-fit:contain;border-radius:8px;border:1.5px solid var(--border);background:var(--bg)">
+
+        <!-- Upload file -->
+        <div>
+          <label class="form-label" style="margin-bottom:0.8rem;display:block">Upload from Device</label>
+          <div class="cat-img-upload-zone">
+            <input type="file" accept="image/*" id="catImgFileInput">
+            <div class="cat-img-upload-zone__icon">📁</div>
+            <div class="cat-img-upload-zone__text"><strong><span>Click to upload</span></strong> or drag an image here</div>
+          </div>
+        </div>
+
+        <!-- Or URL -->
+        <div>
+          <label class="form-label" for="catImgUrlInput" style="margin-bottom:0.6rem;display:block">Or paste Image URL</label>
+          <input class="form-input" type="url" id="catImgUrlInput" placeholder="https://example.com/image.jpg">
+          <p style="font-size:1.2rem;color:var(--text-light);margin-top:0.5rem">Image will update live on the storefront as soon as you save.</p>
+        </div>
+
+        <!-- Caption -->
+        <div>
+          <label class="form-label" for="catImgCaption" style="margin-bottom:0.6rem;display:block">Caption (shown on storefront)</label>
+          <input class="form-input" type="text" id="catImgCaption" placeholder="e.g. Classic plastic generation Beyblades">
+        </div>
+
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-outline" id="cancelCatImgBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveCatImgBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:1.6rem;height:1.6rem"><polyline points="20 6 9 17 4 12"/></svg>Save Image
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification"></div>
+
+<script src="admin.js"></script>
+<script>
+  // Wire up header close button for catImgModal
+  document.getElementById('cancelCatImgBtnHeader')?.addEventListener('click', closeCatImgModal);
+</script>
+</body>
+</html>
